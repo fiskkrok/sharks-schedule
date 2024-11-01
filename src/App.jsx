@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import PlayerStats from './components/PlayerStats';
 
 // Utility functions remain the same
 const formatGameTime = (dateStr, timeZone) => {
@@ -160,6 +161,8 @@ const App = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPlayerStats, setShowPlayerStats] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null);
 
   useEffect(() => {
     setUserTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -195,6 +198,11 @@ const App = () => {
 
     fetchSchedule();
   }, []);
+
+  const handleCardClick = (game) => {
+    setSelectedGame(game);
+    setShowPlayerStats(true);
+  };
 
   if (loading) {
     return (
@@ -256,12 +264,16 @@ const App = () => {
           </div>
         </div>
 
+        {showPlayerStats && (
+          <PlayerStats game={selectedGame} />
+        )}
+
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-4 sm:px-0">
             Upcoming Games
           </h2>
           {upcomingGames.map((game) => (
-            <GameCard key={game.id} game={game} userTimeZone={userTimeZone} />
+            <GameCard key={game.id} game={game} userTimeZone={userTimeZone} onCardClick={handleCardClick} />
           ))}
         </div>
 
@@ -270,7 +282,7 @@ const App = () => {
             Past Games
           </h2>
           {pastGames.map((game) => (
-            <GameCard key={game.id} game={game} userTimeZone={userTimeZone} />
+            <GameCard key={game.id} game={game} userTimeZone={userTimeZone} onCardClick={handleCardClick} />
           ))}
         </div>
       </div>

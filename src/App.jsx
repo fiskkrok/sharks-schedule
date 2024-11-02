@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import GameCard from './components/GameCard';
 import GameStatsModal from './components/GameStatsModal';
-import {
-  formatGameTime,
-  formatGameDate,
-  isGameInFuture,
-} from './utils/dateUtils';
+import { isGameInFuture } from './utils/dateUtils';
+
+const GAMES_PER_PAGE = 10;
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -14,6 +12,9 @@ const App = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [visibleUpcomingGames, setVisibleUpcomingGames] =
+    useState(GAMES_PER_PAGE);
+  const [visiblePastGames, setVisiblePastGames] = useState(GAMES_PER_PAGE);
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
 
@@ -57,6 +58,14 @@ const App = () => {
     setShowPlayerStats(true);
   };
 
+  const loadMoreUpcomingGames = () => {
+    setVisibleUpcomingGames((prev) => prev + GAMES_PER_PAGE);
+  };
+
+  const loadMorePastGames = () => {
+    setVisiblePastGames((prev) => prev + GAMES_PER_PAGE);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -86,9 +95,9 @@ const App = () => {
     <div
       className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}
     >
-      {/* Header section */}
-      <div className="w-full px-0 sm:px-4 sm:max-w-2xl sm:mx-auto">
-        <div className="flex justify-between items-center mb-6 px-4 sm:px-0">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* Header section */}
+        <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               Sharks Schedule
@@ -99,11 +108,11 @@ const App = () => {
           </div>
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setShowPlayerStats((prev) => !prev)}
-              className="flex items-center  px-1 py-1 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
+              onClick={() => setShowPlayerStats(true)}
+              className="flex items-center px-3 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
             >
-              <span className="text-sm font-bold">#55 |</span>
-              <span className="text-sm font-semibold">| Lilly</span>
+              <span className="text-sm font-bold mr-1">#55</span>
+              <span className="text-sm font-semibold">Lilly</span>
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -120,43 +129,63 @@ const App = () => {
 
         {/* Upcoming Games section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-4 sm:px-0">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
             Upcoming Games
           </h2>
-          {upcomingGames.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              userTimeZone={userTimeZone}
-              onCardClick={handleGameCardClick}
-            />
-          ))}
+          <div className="space-y-4">
+            {upcomingGames.slice(0, visibleUpcomingGames).map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                userTimeZone={userTimeZone}
+                onCardClick={handleGameCardClick}
+              />
+            ))}
+          </div>
+          {upcomingGames.length > visibleUpcomingGames && (
+            <button
+              onClick={loadMoreUpcomingGames}
+              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
+            >
+              Show More Upcoming Games
+            </button>
+          )}
         </div>
 
         {/* Past Games section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white px-4 sm:px-0">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
             Past Games
           </h2>
-          {pastGames.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              userTimeZone={userTimeZone}
-              onCardClick={handleGameCardClick}
-            />
-          ))}
+          <div className="space-y-4">
+            {pastGames.slice(0, visiblePastGames).map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                userTimeZone={userTimeZone}
+                onCardClick={handleGameCardClick}
+              />
+            ))}
+          </div>
+          {pastGames.length > visiblePastGames && (
+            <button
+              onClick={loadMorePastGames}
+              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
+            >
+              Show More Past Games
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* Game Stats Modal */}
-      {showPlayerStats && selectedGame && (
-        <GameStatsModal
-          game={selectedGame}
-          isOpen={showPlayerStats}
-          onClose={() => setShowPlayerStats(false)}
-        />
-      )}
+        {/* Game Stats Modal */}
+        {showPlayerStats && selectedGame && (
+          <GameStatsModal
+            game={selectedGame}
+            isOpen={showPlayerStats}
+            onClose={() => setShowPlayerStats(false)}
+          />
+        )}
+      </div>
     </div>
   );
 };

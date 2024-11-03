@@ -67,8 +67,7 @@ const GameStatsModal = ({ game, isOpen, onClose }) => {
                 onClick={() => setShowPlayerStats(true)}
                 className="flex items-center px-1 py-1 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
               >
-                <span className="text-sm font-bold">#55 |</span>
-                <span className="text-sm font-semibold">| Lilly</span>
+                <span className="text-sm font-bold">#37 </span>
               </button>
             </div>
           </div>
@@ -78,6 +77,7 @@ const GameStatsModal = ({ game, isOpen, onClose }) => {
         game={game}
         isOpen={showPlayerStats}
         onClose={() => setShowPlayerStats(false)}
+        activeTab="game"
       />
     </>
   );

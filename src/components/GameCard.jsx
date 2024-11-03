@@ -4,21 +4,26 @@ import {
   formatGameDate,
   isGameInFuture,
 } from '../utils/dateUtils';
+import {
+  calculateAdvancedWinProbability,
+  getWinProbabilityDetails,
+} from '../utils/probabilityUtils';
+import ProbabilityBar from '../utils/probabilityBarUtils';
 
-const GameCard = ({ game, userTimeZone, onCardClick }) => {
+const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
+  if (!game?.startTimeUTC) {
+    return null; // Don't render invalid games
+  }
+
   const isFuture = isGameInFuture(game.startTimeUTC);
   const cardRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const isSharksHome = game.homeTeam.abbrev === 'SJS';
+  const [showProbabilityDetails, setShowProbabilityDetails] = useState(false);
+  const [probabilityDetails, setProbabilityDetails] = useState(null);
+
+  const isSharksHome = game?.homeTeam?.abbrev === 'SJS';
   const gameTime = formatGameTime(game.startTimeUTC, userTimeZone);
   const gameDate = formatGameDate(game.startTimeUTC, userTimeZone);
-
-  const homeWinProbability = game.homeTeam.pointPct
-    ? Math.round(game.homeTeam.pointPct * 100)
-    : 50;
-  const winProbability = isSharksHome
-    ? homeWinProbability
-    : 100 - homeWinProbability;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -41,10 +46,25 @@ const GameCard = ({ game, userTimeZone, onCardClick }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (game && allGames?.length > 0) {
+      const details = getWinProbabilityDetails(game, allGames, isSharksHome);
+      setProbabilityDetails(details);
+    }
+  }, [game, allGames, isSharksHome]);
+
+  const winProbability = Math.round(
+    calculateAdvancedWinProbability(game, allGames || [], isSharksHome) * 100
+  );
+
+  if (!game?.homeTeam || !game?.awayTeam) {
+    return null;
+  }
+
   return (
     <div
       ref={cardRef}
-      onClick={() => !isFuture && onCardClick(game)}
+      onClick={() => !isFuture && onCardClick?.(game)}
       className={`
         mx-4 p-6 rounded-lg 
         bg-white dark:bg-gray-800 
@@ -110,7 +130,7 @@ const GameCard = ({ game, userTimeZone, onCardClick }) => {
             >
               {game.homeTeam.abbrev}
             </span>
-            {!isFuture && (
+            {!isFuture && typeof game.homeTeam.score === 'number' && (
               <span className="font-bold text-lg">{game.homeTeam.score}</span>
             )}
           </div>
@@ -138,7 +158,7 @@ const GameCard = ({ game, userTimeZone, onCardClick }) => {
             >
               {game.awayTeam.abbrev}
             </span>
-            {!isFuture && (
+            {!isFuture && typeof game.awayTeam.score === 'number' && (
               <span className="font-bold text-lg">{game.awayTeam.score}</span>
             )}
           </div>
@@ -151,18 +171,62 @@ const GameCard = ({ game, userTimeZone, onCardClick }) => {
         </div>
       </div>
 
-      {/* Win Probability Bar */}
-      <div className="mt-4">
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 text-center">
-          Win Probability
+      {/* Win Probability Section */}
+      {probabilityDetails && (
+        <div className="mt-4 relative">
+          <button
+            className="w-full relative"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowProbabilityDetails(!showProbabilityDetails);
+            }}
+          >
+            <ProbabilityBar
+              probability={winProbability / 100}
+              trend={probabilityDetails.recentForm.trend}
+              showDetails={true}
+              className="mb-2"
+            />
+          </button>
+
+          {/* Probability Details Tooltip */}
+          {showProbabilityDetails && (
+            <div
+              className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {Object.entries(probabilityDetails).map(([key, detail]) => (
+                <div key={key} className="mb-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {detail.label}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {Math.round(detail.probability * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                    <div
+                      className="bg-teal-500 h-1 rounded-full transition-all duration-300"
+                      style={{ width: `${detail.probability * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    Final Probability
+                  </span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400">
+                    {winProbability}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-teal-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${winProbability}%` }}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

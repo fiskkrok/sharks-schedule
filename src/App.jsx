@@ -3,14 +3,14 @@ import { Moon, Sun } from 'lucide-react';
 import GameCard from './components/GameCard';
 import GameStatsModal from './components/GameStatsModal';
 import { isGameInFuture } from './utils/dateUtils';
-
-const GAMES_PER_PAGE = 10;
+import { useGames } from './context/GamesContext';
+import PlayerStats from './components/player-stats';
+const GAMES_PER_PAGE = 3;
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [userTimeZone, setUserTimeZone] = useState('UTC');
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Remove the local loading state since we're using context loading
   const [error, setError] = useState(null);
   const [visibleUpcomingGames, setVisibleUpcomingGames] =
     useState(GAMES_PER_PAGE);
@@ -18,40 +18,21 @@ const App = () => {
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
 
+  // Get games from context
+  const { allGames = [], loading: gamesLoading } = useGames();
+  const sharksGames =
+    allGames?.filter(
+      (game) =>
+        game?.homeTeam?.abbrev === 'SJS' || game?.awayTeam?.abbrev === 'SJS'
+    ) || [];
+
   useEffect(() => {
     setUserTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setDarkMode(true);
     }
-
-    fetchSchedule();
   }, []);
-
-  const fetchSchedule = async () => {
-    try {
-      const currentDate = new Date();
-      const year =
-        currentDate.getMonth() < 7
-          ? currentDate.getFullYear() - 1
-          : currentDate.getFullYear();
-      const season = `${year}${year + 1}`;
-
-      const response = await fetch(
-        `/api/v1/club-schedule-season/SJS/${season}`
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setGames(data.games || []);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching schedule:', err);
-      setError('Failed to load schedule. Please try again later.');
-      setLoading(false);
-    }
-  };
 
   const handleGameCardClick = (game) => {
     setSelectedGame(game);
@@ -66,7 +47,7 @@ const App = () => {
     setVisiblePastGames((prev) => prev + GAMES_PER_PAGE);
   };
 
-  if (loading) {
+  if (gamesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <div className="text-lg font-medium text-gray-900 dark:text-white">
@@ -86,10 +67,12 @@ const App = () => {
     );
   }
 
-  const upcomingGames = games.filter((game) =>
+  const upcomingGames = sharksGames.filter((game) =>
     isGameInFuture(game.startTimeUTC)
   );
-  const pastGames = games.filter((game) => !isGameInFuture(game.startTimeUTC));
+  const pastGames = sharksGames.filter(
+    (game) => !isGameInFuture(game.startTimeUTC)
+  );
 
   return (
     <div
@@ -111,8 +94,8 @@ const App = () => {
               onClick={() => setShowPlayerStats(true)}
               className="flex items-center px-3 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
             >
-              <span className="text-sm font-bold mr-1">#55</span>
-              <span className="text-sm font-semibold">Lilly</span>
+              <span className="text-sm font-bold mr-1">#37</span>
+              <span className="text-sm font-semibold">Timothy</span>
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -139,6 +122,7 @@ const App = () => {
                 game={game}
                 userTimeZone={userTimeZone}
                 onCardClick={handleGameCardClick}
+                allGames={allGames}
               />
             ))}
           </div>
@@ -147,7 +131,8 @@ const App = () => {
               onClick={loadMoreUpcomingGames}
               className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
             >
-              Show More Upcoming Games
+              Show More Upcoming Games (
+              {upcomingGames.length - visibleUpcomingGames} remaining)
             </button>
           )}
         </div>
@@ -164,6 +149,7 @@ const App = () => {
                 game={game}
                 userTimeZone={userTimeZone}
                 onCardClick={handleGameCardClick}
+                allGames={allGames}
               />
             ))}
           </div>
@@ -172,7 +158,8 @@ const App = () => {
               onClick={loadMorePastGames}
               className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
             >
-              Show More Past Games
+              Show More Past Games ({pastGames.length - visiblePastGames}{' '}
+              remaining)
             </button>
           )}
         </div>
@@ -185,6 +172,12 @@ const App = () => {
             onClose={() => setShowPlayerStats(false)}
           />
         )}
+        <PlayerStats
+          game={selectedGame ?? null}
+          isOpen={showPlayerStats}
+          onClose={() => setShowPlayerStats(false)}
+          activeTab="season"
+        />
       </div>
     </div>
   );

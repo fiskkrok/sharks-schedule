@@ -8,7 +8,7 @@ import {
   calculateAdvancedWinProbability,
   getWinProbabilityDetails,
 } from '../utils/probabilityUtils';
-import ProbabilityBar from '../utils/probabilityBarUtils';
+import ProbabilityBar from '../utils/probabilityBar';
 
 const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
   if (!game?.startTimeUTC) {
@@ -20,6 +20,7 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showProbabilityDetails, setShowProbabilityDetails] = useState(false);
   const [probabilityDetails, setProbabilityDetails] = useState(null);
+  const [winProbability, setWinProbability] = useState(null);
 
   const isSharksHome = game?.homeTeam?.abbrev === 'SJS';
   const gameTime = formatGameTime(game.startTimeUTC, userTimeZone);
@@ -50,12 +51,15 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
     if (game && allGames?.length > 0) {
       const details = getWinProbabilityDetails(game, allGames, isSharksHome);
       setProbabilityDetails(details);
+
+      const probability = calculateAdvancedWinProbability(
+        game,
+        allGames,
+        isSharksHome
+      );
+      setWinProbability(probability);
     }
   }, [game, allGames, isSharksHome]);
-
-  const winProbability = Math.round(
-    calculateAdvancedWinProbability(game, allGames || [], isSharksHome) * 100
-  );
 
   if (!game?.homeTeam || !game?.awayTeam) {
     return null;
@@ -73,10 +77,11 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
         ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
         ${!isFuture ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700' : ''}
         transform hover:scale-[1.02] hover:shadow-lg
+        ${showProbabilityDetails ? 'shadow-xl' : ''}
       `}
     >
       {/* Background Logos with Parallax */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none ">
         {/* Home team logo */}
         <div
           className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-1000 opacity-[0.03] transform 
@@ -131,7 +136,15 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
               {game.homeTeam.abbrev}
             </span>
             {!isFuture && typeof game.homeTeam.score === 'number' && (
-              <span className="font-bold text-lg">{game.homeTeam.score}</span>
+              <span
+                className={`font-bold text-lg ${
+                  game.homeTeam.abbrev === 'SJS'
+                    ? 'text-teal-600 dark:text-teal-400'
+                    : 'text-black dark:text-white'
+                }`}
+              >
+                {game.homeTeam.score}
+              </span>
             )}
           </div>
         </div>
@@ -159,7 +172,15 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
               {game.awayTeam.abbrev}
             </span>
             {!isFuture && typeof game.awayTeam.score === 'number' && (
-              <span className="font-bold text-lg">{game.awayTeam.score}</span>
+              <span
+                className={`font-bold text-lg ${
+                  game.awayTeam.abbrev === 'SJS'
+                    ? 'text-teal-600 dark:text-teal-400'
+                    : 'text-black dark:text-white'
+                }`}
+              >
+                {game.awayTeam.score}
+              </span>
             )}
           </div>
           <img
@@ -172,8 +193,10 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
       </div>
 
       {/* Win Probability Section */}
-      {probabilityDetails && (
-        <div className="mt-4 relative">
+      {isFuture && probabilityDetails && winProbability && (
+        <div
+          className={`mt-6 transition-all duration-300 ease-in-out ${showProbabilityDetails ? 'mb-6' : ''}`}
+        >
           <button
             className="w-full relative"
             onClick={(e) => {
@@ -182,49 +205,53 @@ const GameCard = ({ game, userTimeZone, onCardClick, allGames = [] }) => {
             }}
           >
             <ProbabilityBar
-              probability={winProbability / 100}
-              trend={probabilityDetails.recentForm.trend}
+              probability={winProbability.probability}
+              trend={winProbability.trend}
               showDetails={true}
               className="mb-2"
             />
           </button>
 
-          {/* Probability Details Tooltip */}
-          {showProbabilityDetails && (
-            <div
-              className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {Object.entries(probabilityDetails).map(([key, detail]) => (
-                <div key={key} className="mb-2">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {detail.label}
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {Math.round(detail.probability * 100)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                    <div
-                      className="bg-teal-500 h-1 rounded-full transition-all duration-300"
-                      style={{ width: `${detail.probability * 100}%` }}
+          {/* Expanded Probability Details */}
+          <div
+            className={`
+              grid grid-rows-[0fr] transition-all duration-300 ease-in-out
+              ${showProbabilityDetails ? 'grid-rows-[1fr] mt-4' : ''}
+            `}
+          >
+            <div className="overflow-hidden">
+              <div className="min-h-0">
+                {Object.entries(probabilityDetails).map(([key, detail]) => (
+                  <div key={key} className="mb-3 px-2">
+                    <ProbabilityBar
+                      probability={detail.probability}
+                      trend={detail.trend}
+                      label={detail.label}
+                      showDetails={true}
+                      className="mb-2"
                     />
                   </div>
-                </div>
-              ))}
-              <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    Final Probability
-                  </span>
-                  <span className="font-bold text-teal-600 dark:text-teal-400">
-                    {winProbability}%
-                  </span>
+                ))}
+
+                <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 px-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      Final Probability
+                    </span>
+                    <span className="font-bold text-teal-600 dark:text-teal-400">
+                      {Math.round(winProbability.probability * 100)}%
+                    </span>
+                  </div>
+                  {Math.abs(winProbability.trend) >= 2 && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Trend: {winProbability.trend > 0 ? '+' : ''}
+                      {Math.round(winProbability.trend)}% over last 5 games
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

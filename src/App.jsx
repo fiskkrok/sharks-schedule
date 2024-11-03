@@ -70,9 +70,9 @@ const App = () => {
   const upcomingGames = sharksGames.filter((game) =>
     isGameInFuture(game.startTimeUTC)
   );
-  const pastGames = sharksGames.filter(
-    (game) => !isGameInFuture(game.startTimeUTC)
-  );
+  const pastGames = sharksGames
+    .filter((game) => !isGameInFuture(game.startTimeUTC))
+    .sort((a, b) => new Date(b.startTimeUTC) - new Date(a.startTimeUTC));
 
   return (
     <div

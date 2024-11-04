@@ -20,7 +20,7 @@ export const GamesProvider = ({ children }) => {
 
         // Fetch Sharks schedule
         const sharksResponse = await fetch(
-          `/api/v1/club-schedule-season/SJS/${season}`
+          `https://api-web.nhle.com/club-schedule-season/SJS/${season}`
         );
         if (!sharksResponse.ok)
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);
@@ -45,7 +45,9 @@ export const GamesProvider = ({ children }) => {
         for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((teamCode) =>
-            fetch(`/api/v1/club-schedule-season/${teamCode}/${season}`)
+            fetch(
+              `https://api-web.nhle.com/club-schedule-season/${teamCode}/${season}`
+            )
               .then((response) => (response.ok ? response.json() : null))
               .catch((error) => {
                 console.warn(

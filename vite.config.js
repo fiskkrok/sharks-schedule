@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/fiskkrok/',
+  base: '/sharks-schedule/',
   server: {
     proxy: {
       '/api/v1': {

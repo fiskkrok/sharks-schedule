@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import PlayerStats from './player-stats';
+import PlayerStats from './PlayerStats';
 
 const GameStatsModal = ({ game, isOpen, onClose }) => {
   const [showPlayerStats, setShowPlayerStats] = useState(false);

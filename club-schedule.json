@@ -1,451 +1,134 @@
- curl -L -X GET "https://api-web.nhle.com/v1/club-schedule-season/sjs/now"6  19: 25: 02 
-{
-    "previousSeason": 20232024,
-    "currentSeason": 20242025,
-    "clubTimezone": "US/Pacific",
-    "clubUTCOffset": "-08:00",
-    "games": [
-        {
-            "id": 2024010012,
-            "season": 20242025,
-            "gameType": 1,
-            "gameDate": "2024-09-22",
-            "venue": {
-                "default": "SAP Center at San Jose",
-                "es": "SAP Center en San Jose",
-                "fr": "SAP Center de San Jose"
+import React,
+{ useState, useEffect
+} from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import { Search, Filter, RefreshCcw
+} from 'lucide-react';
+
+const ComparisonSelect = ({ onSelect, type, currentValue
+}) => {
+  const [isOpen, setIsOpen
+    ] = useState(false);
+
+  const options = {
+    team: [
+            { label: 'Team Defensemen', value: 'team'
             },
-            "neutralSite": false,
-            "startTimeUTC": "2024-09-23T00:00:00Z",
-            "easternUTCOffset": "-04:00",
-            "venueUTCOffset": "-07:00",
-            "venueTimezone": "US/Pacific",
-            "gameState": "FINAL",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [],
-            "awayTeam": {
-                "id": 54,
-                "placeName": {
-                    "default": "Vegas"
-                },
-                "placeNameWithPreposition": {
-                    "default": "Vegas",
-                    "fr": "de Vegas"
-                },
-                "abbrev": "VGK",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/VGK_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VGK_dark.svg",
-                "awaySplitSquad": false,
-                "score": 4
+            { label: 'League Average', value: 'league_avg'
             },
-            "homeTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "homeSplitSquad": false,
-                "score": 2
-            },
-            "periodDescriptor": {
-                "periodType": "REG",
-                "maxRegulationPeriods": 3
-            },
-            "gameOutcome": {
-                "lastPeriodType": "REG"
-            },
-            "winningGoalie": {
-                "playerId": 8481520,
-                "firstInitial": {
-                    "default": "I."
-                },
-                "lastName": {
-                    "default": "Saville"
+            { label: 'Top 10 Defensemen', value: 'top_10'
+            }
+        ]
+    };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)
+    }
+        className="w-full px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
+      >
+        <span className="text-sm text-gray-900 dark:text-white">
+          {options[type
+        ].find(opt => opt.value === currentValue)?.label
+    }
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          {options[type
+            ].map(option => (
+            <button
+              key={option.value
+            }
+              onClick={() => {
+                onSelect(option.value);
+                setIsOpen(false);
                 }
-            },
-            "winningGoalScorer": {
-                "playerId": 8484466,
-                "firstInitial": {
-                    "default": "T."
-                },
-                "lastName": {
-                    "default": "Uronen"
-                }
-            },
-            "gameCenterLink": "/gamecenter/vgk-vs-sjs/2024/09/22/2024010012"
-        },
-        {
-            "id": 2024010026,
-            "season": 20242025,
-            "gameType": 1,
-            "gameDate": "2024-09-24",
-            "venue": {
-                "default": "SAP Center at San Jose",
-                "es": "SAP Center en San Jose",
-                "fr": "SAP Center de San Jose"
-            },
-            "neutralSite": false,
-            "startTimeUTC": "2024-09-25T02:00:00Z",
-            "easternUTCOffset": "-04:00",
-            "venueUTCOffset": "-07:00",
-            "venueTimezone": "US/Pacific",
-            "gameState": "FINAL",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [],
-            "awayTeam": {
-                "id": 24,
-                "placeName": {
-                    "default": "Anaheim"
-                },
-                "placeNameWithPreposition": {
-                    "default": "Anaheim",
-                    "fr": "d'Anaheim"
-                },
-                "abbrev": "ANA",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/ANA_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/ANA_dark.svg",
-                "awaySplitSquad": false,
-                "score": 4
-            },
-            "homeTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "homeSplitSquad": false,
-                "score": 3
-            },
-            "periodDescriptor": {
-                "periodType": "REG",
-                "maxRegulationPeriods": 3
-            },
-            "gameOutcome": {
-                "lastPeriodType": "REG"
-            },
-            "winningGoalie": {
-                "playerId": 8476861,
-                "firstInitial": {
-                    "default": "O."
-                },
-                "lastName": {
-                    "default": "Dansk"
-                }
-            },
-            "winningGoalScorer": {
-                "playerId": 8475796,
-                "firstInitial": {
-                    "default": "M."
-                },
-                "lastName": {
-                    "default": "Pysyk"
-                }
-            },
-            "gameCenterLink": "/gamecenter/ana-vs-sjs/2024/09/24/2024010026"
-        },
-        {
-            "id": 2024010040,
-            "season": 20242025,
-            "gameType": 1,
-            "gameDate": "2024-09-26",
-            "venue": {
-                "default": "Honda Center"
-            },
-            "neutralSite": false,
-            "startTimeUTC": "2024-09-27T02:00:00Z",
-            "easternUTCOffset": "-04:00",
-            "venueUTCOffset": "-07:00",
-            "venueTimezone": "America/Los_Angeles",
-            "gameState": "FINAL",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [],
-            "awayTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "awaySplitSquad": false,
-                "score": 3
-            },
-            "homeTeam": {
-                "id": 24,
-                "placeName": {
-                    "default": "Anaheim"
-                },
-                "placeNameWithPreposition": {
-                    "default": "Anaheim",
-                    "fr": "d'Anaheim"
-                },
-                "abbrev": "ANA",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/ANA_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/ANA_dark.svg",
-                "homeSplitSquad": false,
-                "score": 2
-            },
-            "periodDescriptor": {
-                "periodType": "OT",
-                "maxRegulationPeriods": 3
-            },
-            "gameOutcome": {
-                "lastPeriodType": "OT"
-            },
-            "winningGoalie": {
-                "playerId": 8484312,
-                "firstInitial": {
-                    "default": "G."
-                },
-                "lastName": {
-                    "default": "Romanov"
-                }
-            },
-            "winningGoalScorer": {
-                "playerId": 8484152,
-                "firstInitial": {
-                    "default": "L."
-                },
-                "lastName": {
-                    "default": "Cagnoni"
-                }
-            },
-            "gameCenterLink": "/gamecenter/sjs-vs-ana/2024/09/26/2024010040"
-        },
-        {
-            "id": 2024020219,
-            "season": 20242025,
-            "gameType": 2,
-            "gameDate": "2024-11-07",
-            "venue": {
-                "default": "SAP Center at San Jose",
-                "es": "SAP Center en San Jose",
-                "fr": "SAP Center de San Jose"
-            },
-            "neutralSite": false,
-            "startTimeUTC": "2024-11-08T03:30:00Z",
-            "easternUTCOffset": "-05:00",
-            "venueUTCOffset": "-08:00",
-            "venueTimezone": "US/Pacific",
-            "gameState": "FUT",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [
-                {
-                    "id": 567,
-                    "market": "A",
-                    "countryCode": "US",
-                    "network": "FDSNNO",
-                    "sequenceNumber": 274
-                },
-                {
-                    "id": 314,
-                    "market": "H",
-                    "countryCode": "US",
-                    "network": "NBCSCA",
-                    "sequenceNumber": 384
-                },
-                {
-                    "id": 570,
-                    "market": "A",
-                    "countryCode": "US",
-                    "network": "FDSNWIX",
-                    "sequenceNumber": 411
-                }
-            ],
-            "awayTeam": {
-                "id": 30,
-                "placeName": {
-                    "default": "Minnesota"
-                },
-                "placeNameWithPreposition": {
-                    "default": "Minnesota",
-                    "fr": "du Minnesota"
-                },
-                "abbrev": "MIN",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/MIN_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/MIN_dark.svg",
-                "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/MIN/20242025/MIN-radio.m3u8",
-                "airlineLink": "https://wild.bookseats.com/build-package/2691604?utm_source=wild&utm_medium=schedule_page&utm_campaign=wild_sharks&utm_term=away",
-                "airlineDesc": "Travel Packages"
-            },
-            "homeTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/SJS/20242025/SJS-radio.m3u8"
-            },
-            "periodDescriptor": {
-                "periodType": "REG",
-                "maxRegulationPeriods": 3
-            },
-            "ticketsLink": "https://www.ticketmaster.com/event/1C0060D8ECFF7EC1?utm_source=web&utm_medium=schedule-tickets",
-            "ticketsLinkFr": "https://www.ticketmaster.com/event/1C0060D8ECFF7EC1?utm_source=web&utm_medium=schedule-tickets",
-            "gameCenterLink": "/gamecenter/min-vs-sjs/2024/11/07/2024020219"
-        },
-        {
-            "id": 2024020236,
-            "season": 20242025,
-            "gameType": 2,
-            "gameDate": "2024-11-10",
-            "venue": {
-                "default": "Prudential Center"
-            },
-            "neutralSite": false,
-            "startTimeUTC": "2024-11-11T00:00:00Z",
-            "easternUTCOffset": "-05:00",
-            "venueUTCOffset": "-05:00",
-            "venueTimezone": "US/Eastern",
-            "gameState": "FUT",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [
-                {
-                    "id": 314,
-                    "market": "A",
-                    "countryCode": "US",
-                    "network": "NBCSCA",
-                    "sequenceNumber": 384
-                },
-                {
-                    "id": 409,
-                    "market": "H",
-                    "countryCode": "US",
-                    "network": "MSGSN",
-                    "sequenceNumber": 402
-                }
-            ],
-            "awayTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/SJS/20242025/SJS-radio.m3u8"
-            },
-            "homeTeam": {
-                "id": 1,
-                "placeName": {
-                    "default": "New Jersey"
-                },
-                "placeNameWithPreposition": {
-                    "default": "New Jersey",
-                    "fr": "du New Jersey"
-                },
-                "abbrev": "NJD",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/NJD_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/NJD_dark.svg",
-                "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/NJD/20242025/NJD-radio.m3u8"
-            },
-            "periodDescriptor": {
-                "periodType": "REG",
-                "maxRegulationPeriods": 3
-            },
-            "ticketsLink": "https://www.ticketmaster.com/event/020060E2994C3408?brand=devils&landing=s&wt.mc_id=NHL_TEAM_NJD_SCHEDULE_GM9camefrom=CFC_DEVILS_NHL_TEAM_NJD_SCHEDULE_GM9",
-            "ticketsLinkFr": "https://www.ticketmaster.com/event/020060E2994C3408?brand=devils&landing=s&wt.mc_id=NHL_TEAM_NJD_SCHEDULE_GM9camefrom=CFC_DEVILS_NHL_TEAM_NJD_SCHEDULE_GM9",
-            "gameCenterLink": "/gamecenter/sjs-vs-njd/2024/11/10/2024020236"
-        },
-        {
-            "id": 2024020240,
-            "season": 20242025,
-            "gameType": 2,
-            "gameDate": "2024-11-11",
-            "venue": {
-                "default": "Wells Fargo Center"
-            },
-            "neutralSite": false,
-            "startTimeUTC": "2024-11-12T00:00:00Z",
-            "easternUTCOffset": "-05:00",
-            "venueUTCOffset": "-05:00",
-            "venueTimezone": "US/Eastern",
-            "gameState": "FUT",
-            "gameScheduleState": "OK",
-            "tvBroadcasts": [
-                {
-                    "id": 322,
-                    "market": "H",
-                    "countryCode": "US",
-                    "network": "NBCSP",
-                    "sequenceNumber": 380
-                },
-                {
-                    "id": 314,
-                    "market": "A",
-                    "countryCode": "US",
-                    "network": "NBCSCA",
-                    "sequenceNumber": 384
-                }
-            ],
-            "awayTeam": {
-                "id": 28,
-                "placeName": {
-                    "default": "San Jose"
-                },
-                "placeNameWithPreposition": {
-                    "default": "San Jose",
-                    "fr": "de San Jose"
-                },
-                "abbrev": "SJS",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
-                "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/SJS/20242025/SJS-radio.m3u8"
-            },
-            "homeTeam": {
-                "id": 4,
-                "placeName": {
-                    "default": "Philadelphia",
-                    "fr": "Philadelphie"
-                },
-                "placeNameWithPreposition": {
-                    "default": "Philadelphia",
-                    "fr": "de Philadelphie"
-                },
-                "abbrev": "PHI",
-                "logo": "https://assets.nhle.com/logos/nhl/svg/PHI_light.svg",
-                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/PHI_dark.svg",
-                "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/PHI/20242025/PHI-radio.m3u8"
-            },
-            "periodDescriptor": {
-                "periodType": "REG",
-                "maxRegulationPeriods": 3
-            },
-            "ticketsLink": "https://www.ticketmaster.com/event/300060E1CDB7234C?brand=flyers&artistid=806000&wt.mc_id=NHL_TEAM_PHI_SCHEDULE_GM7&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_PHI&utm_content=SCHEDULE_GM7",
-            "ticketsLinkFr": "https://www.ticketmaster.com/event/300060E1CDB7234C?brand=flyers&artistid=806000&wt.mc_id=NHL_TEAM_PHI_SCHEDULE_GM7&utm_source=NHL.com&utm_medium=client&utm_campaign=NHL_TEAM_PHI&utm_content=SCHEDULE_GM7",
-            "gameCenterLink": "/gamecenter/sjs-vs-phi/2024/11/11/2024020240"
+            }
+              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              {option.label
+            }
+            </button>
+          ))
         }
-    ]
-}
+        </div>
+      )
+    }
+    </div>
+  );
+};
+
+const StatComparison = ({ title, playerValue, comparisonValue, isHigherBetter = true
+}) => {
+  const difference = playerValue - comparisonValue;
+  const isPositive = isHigherBetter ? difference > 0 : difference < 0;
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{title
+    }</span>
+        <div className="mt-1 font-semibold text-gray-900 dark:text-white">
+          {playerValue.toFixed(1)
+    } vs {comparisonValue.toFixed(1)
+    }
+        </div>
+      </div>
+      <div className={`text-sm font-medium ${isPositive ? 'text-green-500' : 'text-red-500'
+        }`
+    }>
+        {difference > 0 ? '+' : ''
+    }{difference.toFixed(1)
+    }
+      </div>
+    </div>
+  );
+};
+
+const ComparisonChart = ({ data, metric
+}) => (
+  <div className="h-[300px] w-full">
+    <ResponsiveContainer>
+      <BarChart data={data
+}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey={metric
+} fill="#0d9488" />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+const Comparisons = ({ playerData
+}) => {
+  const [comparisonType, setComparisonType
+    ] = useState('team');
+  const [comparisonData, setComparisonData
+    ] = useState(null);
+  const [loading, setLoading
+    ] = useState(false);
+
+  // Fetch comparison data based on selected type
+  useEffect(() => {
+    const fetchComparisonData = async () => {
+      setLoading(true);
+      try {
+                // This would be replaced with actual API calls
+        const mockComparisonData = {
+          team: {
+            avgPointsPerGame: 0.45,
+            avgTimeOnIce: 18.5,
+            plusMinus: 5,
+            shotBlocks: 45
+                    }
+                };
+        
+        setComparisonData(mockComparison

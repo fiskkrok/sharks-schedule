@@ -4,7 +4,7 @@ import GameCard from './components/GameCard';
 import GameStatsModal from './components/GameStatsModal';
 import { isGameInFuture } from './utils/dateUtils';
 import { useGames } from './context/GamesContext';
-import PlayerStats from './components/player-stats';
+import PlayerStats from './components/PlayerStats';
 const GAMES_PER_PAGE = 3;
 
 const App = () => {

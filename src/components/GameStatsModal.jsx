@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import PlayerStats from './player-stats';
 
 const GameStatsModal = ({ game, isOpen, onClose }) => {
+  const [activeTab, setActiveTab] = useState('summary');
   const [showPlayerStats, setShowPlayerStats] = useState(false);
 
   if (!isOpen) return null;
@@ -64,21 +65,49 @@ const GameStatsModal = ({ game, isOpen, onClose }) => {
 
             <div className="mt-4">
               <button
-                onClick={() => setShowPlayerStats(true)}
-                className="flex items-center px-1 py-1 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
+                onClick={() => setActiveTab('summary')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'summary'
+                    ? 'bg-teal-500 text-white'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
               >
-                <span className="text-sm font-bold">#37 </span>
+                Game Summary
+              </button>
+              <button
+                onClick={() => setActiveTab('timothy')}
+                className={`ml-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'timothy'
+                    ? 'bg-teal-500 text-white'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Timothy's Stats
               </button>
             </div>
+
+            {activeTab === 'summary' && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowPlayerStats(true)}
+                  className="flex items-center px-1 py-1 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white"
+                >
+                  <span className="text-sm font-bold">#37 </span>
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'timothy' && (
+              <PlayerStats
+                game={game}
+                isOpen={showPlayerStats}
+                onClose={() => setShowPlayerStats(false)}
+                activeTab="game"
+              />
+            )}
           </div>
         </div>
       </div>
-      <PlayerStats
-        game={game}
-        isOpen={showPlayerStats}
-        onClose={() => setShowPlayerStats(false)}
-        activeTab="game"
-      />
     </>
   );
 };

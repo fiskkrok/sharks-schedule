@@ -208,8 +208,7 @@ const CareerProgression = ({ seasonTotals }) => {
   );
 };
 
-const PlayerStats = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+const PlayerStats = ({ isOpen, onClose, game, activeTab }) => {
   const [playerData, setPlayerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

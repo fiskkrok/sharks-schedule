@@ -18,9 +18,12 @@ export const GamesProvider = ({ children }) => {
             : currentDate.getFullYear();
         const season = `${year}${year + 1}`;
 
-        // Fetch Sharks schedule
+        // Use environment variable for API URL
+        const PROXY_URL = import.meta.env.VITE_API_URL || '/api';
+
+        // Fetch Sharks schedule using proxy
         const sharksResponse = await fetch(
-          `/api/v1/club-schedule-season/SJS/${season}`
+          `${PROXY_URL}/v1/club-schedule-season/SJS/${season}`
         );
         if (!sharksResponse.ok)
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);

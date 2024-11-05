@@ -1,4 +1,3 @@
-// context/GamesContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const GamesContext = createContext([]);
@@ -48,7 +47,10 @@ export const GamesProvider = ({ children }) => {
         for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((teamCode) =>
-            fetch(`/api/v1/club-schedule-season/${teamCode}/${season}`)
+            fetch(
+              `https://api-web.nhle.com/club-schedule-season/${teamCode}/${season}`,
+              { mode: 'no-cors' }
+            )
               .then((response) => (response.ok ? response.json() : null))
               .catch((error) => {
                 console.warn(

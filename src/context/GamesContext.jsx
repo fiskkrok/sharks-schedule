@@ -1,4 +1,3 @@
-// context/GamesContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const GamesContext = createContext([]);
@@ -20,7 +19,8 @@ export const GamesProvider = ({ children }) => {
 
         // Fetch Sharks schedule
         const sharksResponse = await fetch(
-          `https://api-web.nhle.com/club-schedule-season/SJS/${season}`
+          `https://api-web.nhle.com/club-schedule-season/SJS/${season}`,
+          { mode: 'no-cors' }
         );
         if (!sharksResponse.ok)
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);
@@ -46,7 +46,8 @@ export const GamesProvider = ({ children }) => {
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((teamCode) =>
             fetch(
-              `https://api-web.nhle.com/club-schedule-season/${teamCode}/${season}`
+              `https://api-web.nhle.com/club-schedule-season/${teamCode}/${season}`,
+              { mode: 'no-cors' }
             )
               .then((response) => (response.ok ? response.json() : null))
               .catch((error) => {

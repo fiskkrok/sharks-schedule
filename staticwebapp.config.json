@@ -1,0 +1,28 @@
+{
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/images/*.{png,jpg,gif}",
+            "/css/*"
+        ]
+    },
+    "globalHeaders": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS"
+    },
+    "routes": [
+        {
+            "route": "/api/*",
+            "methods": [
+                "GET"
+            ],
+            "rewrite": "https://api-web.nhle.com/{rest}"
+        }
+    ],
+    "responseOverrides": {
+        "404": {
+            "rewrite": "/index.html",
+            "statusCode": 200
+        }
+    }
+}

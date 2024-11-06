@@ -3,12 +3,9 @@
         "rewrite": "/index.html",
         "exclude": [
             "/images/*.{png,jpg,gif}",
-            "/css/*"
+            "/css/*",
+            "/assets/*"
         ]
-    },
-    "globalHeaders": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS"
     },
     "routes": [
         {
@@ -24,5 +21,8 @@
             "rewrite": "/index.html",
             "statusCode": 200
         }
+    },
+    "globalHeaders": {
+        "cache-control": "must-revalidate, max-age=0"
     }
 }

@@ -25,11 +25,12 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: 'upload'
           app_location: '/'
-          api_location: 'api'
-          output_location: 'dist'
+          api_location: ''
+          output_location: 'dist' # Changed from 'build' to 'dist'
+          skip_api_build: true # Added since we don't have an API
         env:
           VITE_API_URL: '/api'
-          NODE_VERSION: 18
+          NODE_VERSION: '18'
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

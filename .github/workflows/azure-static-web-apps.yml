@@ -26,8 +26,8 @@ jobs:
           action: 'upload'
           app_location: '/'
           api_location: ''
-          output_location: 'dist' # Changed from 'build' to 'dist'
-          skip_api_build: true # Added since we don't have an API
+          app_artifact_location: 'dist' # This is the key change
+          output_location: 'dist' # This should match app_artifact_location
         env:
           VITE_API_URL: '/api'
           NODE_VERSION: '18'

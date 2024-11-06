@@ -2,9 +2,8 @@
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
-            "/images/*.{png,jpg,gif}",
-            "/css/*",
-            "/assets/*"
+            "/assets/*.{png,jpg,gif,svg,css,js}",
+            "/*.{ico,json}"
         ]
     },
     "routes": [
@@ -23,6 +22,11 @@
         }
     },
     "globalHeaders": {
-        "cache-control": "must-revalidate, max-age=0"
+        "cache-control": "no-cache",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS"
+    },
+    "mimeTypes": {
+        ".json": "text/json"
     }
 }

@@ -8,11 +8,32 @@
     },
     "routes": [
         {
+            "route": "/api/v1/club-schedule-season/*",
+            "methods": [
+                "GET",
+                "OPTIONS"
+            ],
+            "rewrite": "https://api-web.nhle.com/v1/club-schedule-season/{rest}",
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Max-Age": "86400"
+            }
+        },
+        {
             "route": "/api/*",
             "methods": [
-                "GET"
+                "GET",
+                "OPTIONS"
             ],
-            "rewrite": "https://api-web.nhle.com/{rest}"
+            "rewrite": "https://api-web.nhle.com/{rest}",
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Max-Age": "86400"
+            }
         }
     ],
     "responseOverrides": {
@@ -22,11 +43,13 @@
         }
     },
     "globalHeaders": {
+        "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-web.nhle.com https://cdn.nhle.com; img-src 'self' data: https://cdn.nhle.com; font-src 'self' data:; connect-src 'self' https://api-web.nhle.com;",
         "cache-control": "no-cache",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS"
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block"
     },
     "mimeTypes": {
-        ".json": "text/json"
+        ".json": "application/json"
     }
 }

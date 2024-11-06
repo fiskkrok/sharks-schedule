@@ -17,15 +17,21 @@ export const GamesProvider = ({ children }) => {
             : currentDate.getFullYear();
         const season = `${year}${year + 1}`;
 
-        // Use environment variable for API URL
-        const PROXY_URL = import.meta.env.VITE_API_URL || '/api';
-
-        // Fetch Sharks schedule using proxy
+        // Fetch Sharks schedule
         const sharksResponse = await fetch(
-          `${PROXY_URL}/v1/club-schedule-season/SJS/${season}`
+          `/api/v1/club-schedule-season/SJS/${season}`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+          }
         );
-        if (!sharksResponse.ok)
+
+        if (!sharksResponse.ok) {
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);
+        }
+
         const sharksData = await sharksResponse.json();
 
         // Set initial games to ensure we have Sharks games immediately
@@ -40,17 +46,19 @@ export const GamesProvider = ({ children }) => {
             opponentCodes.add(game.awayTeam.abbrev);
         });
 
-        // Fetch schedules for all opponents in smaller batches
-        const BATCH_SIZE = 5;
+        // Fetch schedules for all opponents
         const opponentArray = Array.from(opponentCodes);
+        const BATCH_SIZE = 3; // Reduced batch size to avoid rate limiting
 
         for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((teamCode) =>
-            fetch(
-              `https://api-web.nhle.com/club-schedule-season/${teamCode}/${season}`,
-              { mode: 'no-cors' }
-            )
+            fetch(`/api/v1/club-schedule-season/${teamCode}/${season}`, {
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+            })
               .then((response) => (response.ok ? response.json() : null))
               .catch((error) => {
                 console.warn(
@@ -61,20 +69,27 @@ export const GamesProvider = ({ children }) => {
               })
           );
 
-          const batchSchedules = await Promise.all(batchPromises);
+          try {
+            const batchResults = await Promise.all(batchPromises);
 
-          // Add new games to existing ones
-          setAllGames((prevGames) => {
-            const newGames = batchSchedules.flatMap(
-              (schedule) => schedule?.games || []
-            );
-            const combinedGames = [...prevGames, ...newGames];
+            setAllGames((prevGames) => {
+              const newGames = batchResults
+                .filter(Boolean)
+                .flatMap((schedule) => schedule?.games || []);
 
-            // Remove duplicates based on game ID
-            return Array.from(
-              new Map(combinedGames.map((game) => [game.id, game])).values()
-            );
-          });
+              const combinedGames = [...prevGames, ...newGames];
+
+              // Remove duplicates based on game ID
+              return Array.from(
+                new Map(combinedGames.map((game) => [game.id, game])).values()
+              );
+            });
+
+            // Add a small delay between batches to avoid rate limiting
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          } catch (error) {
+            console.warn('Error processing batch:', error);
+          }
         }
 
         setLoading(false);

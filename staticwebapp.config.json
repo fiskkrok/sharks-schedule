@@ -2,54 +2,42 @@
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
-            "/assets/*.{png,jpg,gif,svg,css,js}",
-            "/*.{ico,json}"
+            "/assets/*"
         ]
     },
     "routes": [
         {
-            "route": "/api/v1/club-schedule-season/*",
+            "route": "/api/v1/*",
+            "rewrite": "https://api-web.nhle.com/v1/{rest}",
             "methods": [
-                "GET",
-                "OPTIONS"
+                "GET"
             ],
-            "rewrite": "https://api-web.nhle.com/v1/club-schedule-season/{rest}",
             "headers": {
+                "Cache-Control": "no-cache",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "Access-Control-Max-Age": "86400"
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Headers": "*"
             }
         },
         {
-            "route": "/api/*",
+            "route": "/api/logos/*",
+            "rewrite": "https://www-league.nhlstatic.com/{rest}",
             "methods": [
-                "GET",
-                "OPTIONS"
+                "GET"
             ],
-            "rewrite": "https://api-web.nhle.com/{rest}",
             "headers": {
+                "Cache-Control": "no-cache",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "Access-Control-Max-Age": "86400"
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Headers": "*"
             }
         }
     ],
-    "responseOverrides": {
-        "404": {
-            "rewrite": "/index.html",
+    "platformErrorOverrides": [
+        {
+            "errorType": "NotFound",
+            "serve": "/index.html",
             "statusCode": 200
         }
-    },
-    "globalHeaders": {
-        "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-web.nhle.com https://cdn.nhle.com; img-src 'self' data: https://cdn.nhle.com; font-src 'self' data:; connect-src 'self' https://api-web.nhle.com;",
-        "cache-control": "no-cache",
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode=block"
-    },
-    "mimeTypes": {
-        ".json": "application/json"
-    }
+    ]
 }

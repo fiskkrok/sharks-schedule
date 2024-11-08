@@ -1,43 +1,52 @@
+// import { defineConfig } from 'vite'
+// import react from '@vitejs/plugin-react'
+
+// export default defineConfig({
+//   plugins: [react()],
+//   base: '/fiskkrok/',
+//   server: {
+//     proxy: {
+//       '/api/v1': {
+//         target: 'https://api-web.nhle.com',
+//         changeOrigin: true,
+//         rewrite: (path) => path.replace(/^\/api/, ''),
+//         followRedirects: true,
+//         secure: false
+//       },
+//       '/api/logos': {
+//         target: 'https://www-league.nhlstatic.com',
+//         changeOrigin: true,
+//         rewrite: (path) => path.replace(/^\/api\/logos/, ''),
+//         secure: false
+//       }
+//     }
+//   }
+// })
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          utils: ['lucide-react', 'recharts']
+export default defineConfig(({ command }) =>
+{
+  const isDevelopment = command === 'serve'
+
+  return {
+    plugins: [react()],
+    base: '/',
+    server: isDevelopment ? {
+      proxy: {
+        '/api/v1': {
+          target: 'https://api-web.nhle.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+          secure: false
+        },
+        '/api/logos': {
+          target: 'https://www-league.nhlstatic.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/logos/, ''),
+          secure: false
         }
       }
-    }
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://api-web.nhle.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy, _options) =>
-        {
-          proxy.on('error', (err, _req, _res) =>
-          {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) =>
-          {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) =>
-          {
-            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-          });
-        }
-      }
-    }
+    } : {}
   }
-});
+})

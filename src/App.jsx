@@ -6,6 +6,7 @@ import { isGameInFuture } from './utils/dateUtils';
 import { useGames } from './context/GamesContext';
 import PlayerStats from './components/PlayerStats';
 const INITIAL_BATCH_SIZE = 3;
+const ADDITIONAL_BATCH_SIZE = 3;
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);

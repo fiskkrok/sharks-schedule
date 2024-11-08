@@ -17,27 +17,32 @@ export const GamesProvider = ({ children }) => {
             : currentDate.getFullYear();
         const season = `${year}${year + 1}`;
 
-        // Fetch Sharks schedule
-        const sharksResponse = await fetch(
-          `/api/v1/club-schedule-season/SJS/${season}`,
-          {
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        console.log('Fetching Sharks schedule...');
+        const url = `/api/v1/club-schedule-season/SJS/${season}`;
+        console.log('Request URL:', url);
+
+        const sharksResponse = await fetch(url);
+        console.log('Response status:', sharksResponse.status);
 
         if (!sharksResponse.ok) {
+          const text = await sharksResponse.text();
+          console.error('Response text:', text);
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);
         }
 
         const sharksData = await sharksResponse.json();
+        console.log(
+          'Sharks data received:',
+          sharksData?.games?.length || 0,
+          'games'
+        );
 
-        // Set initial games to ensure we have Sharks games immediately
-        setAllGames(sharksData.games || []);
+        if (!sharksData?.games) {
+          throw new Error('No games data in response');
+        }
 
-        // Get unique opponent team codes
+        setAllGames(sharksData.games);
+
         const opponentCodes = new Set();
         sharksData.games.forEach((game) => {
           if (game.homeTeam.abbrev !== 'SJS')
@@ -46,28 +51,36 @@ export const GamesProvider = ({ children }) => {
             opponentCodes.add(game.awayTeam.abbrev);
         });
 
-        // Fetch schedules for all opponents
+        console.log('Found opponents:', Array.from(opponentCodes));
+
         const opponentArray = Array.from(opponentCodes);
-        const BATCH_SIZE = 3; // Reduced batch size to avoid rate limiting
+        const BATCH_SIZE = 2;
 
         for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
+          console.log(`Processing batch ${i / BATCH_SIZE + 1}`);
+
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
-          const batchPromises = batch.map((teamCode) =>
-            fetch(`/api/v1/club-schedule-season/${teamCode}/${season}`, {
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-              },
-            })
-              .then((response) => (response.ok ? response.json() : null))
+          const batchPromises = batch.map((teamCode) => {
+            const url = `/api/v1/club-schedule-season/${teamCode}/${season}`;
+            console.log('Fetching:', url);
+
+            return fetch(url)
+              .then(async (response) => {
+                if (!response.ok) {
+                  const text = await response.text();
+                  console.error(`Error fetching ${teamCode}:`, text);
+                  return null;
+                }
+                return response.json();
+              })
               .catch((error) => {
                 console.warn(
                   `Failed to fetch schedule for ${teamCode}:`,
                   error
                 );
                 return null;
-              })
-          );
+              });
+          });
 
           try {
             const batchResults = await Promise.all(batchPromises);
@@ -77,18 +90,18 @@ export const GamesProvider = ({ children }) => {
                 .filter(Boolean)
                 .flatMap((schedule) => schedule?.games || []);
 
-              const combinedGames = [...prevGames, ...newGames];
+              console.log('Adding games:', newGames.length);
 
-              // Remove duplicates based on game ID
+              const combinedGames = [...prevGames, ...newGames];
               return Array.from(
                 new Map(combinedGames.map((game) => [game.id, game])).values()
               );
             });
 
-            // Add a small delay between batches to avoid rate limiting
+            // Add delay between batches
             await new Promise((resolve) => setTimeout(resolve, 1000));
           } catch (error) {
-            console.warn('Error processing batch:', error);
+            console.error('Batch processing error:', error);
           }
         }
 

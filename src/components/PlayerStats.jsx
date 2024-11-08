@@ -48,7 +48,7 @@ const PlayerStats = ({ isOpen, onClose }) => {
       try {
         setLoading(true);
         const response = await fetch(
-          '/api/player/8480043/landing'
+          '/api/v1/player/8480043/landing'
           // 'https://api-web.nhle.com/player/8480043/landing'
         );
         if (!response.ok) throw new Error('Failed to fetch player data');

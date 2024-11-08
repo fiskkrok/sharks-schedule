@@ -1,43 +1,48 @@
 {
-    "navigationFallback": {
-        "rewrite": "/index.html",
-        "exclude": [
-            "/assets/*"
-        ]
-    },
     "routes": [
         {
-            "route": "/api/v1/*",
-            "rewrite": "https://api-web.nhle.com/v1/{rest}",
+            "route": "/api/v1/club-schedule-season/*",
+            "rewrite": "https://api-web.nhle.com/v1/club-schedule-season/{*}",
             "methods": [
-                "GET"
+                "GET",
+                "OPTIONS"
             ],
             "headers": {
-                "Cache-Control": "no-cache",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET",
-                "Access-Control-Allow-Headers": "*"
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+                "Cache-Control": "no-cache"
             }
         },
         {
-            "route": "/api/logos/*",
-            "rewrite": "https://www-league.nhlstatic.com/{rest}",
+            "route": "/api/v1/player/*",
+            "rewrite": "https://api-web.nhle.com/v1/player/{*}",
             "methods": [
-                "GET"
+                "GET",
+                "OPTIONS"
             ],
             "headers": {
-                "Cache-Control": "no-cache",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET",
-                "Access-Control-Allow-Headers": "*"
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+                "Cache-Control": "no-cache"
             }
         }
     ],
-    "platformErrorOverrides": [
-        {
-            "errorType": "NotFound",
-            "serve": "/index.html",
-            "statusCode": 200
-        }
-    ]
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/assets/*",
+            "/api/*"
+        ]
+    },
+    "globalHeaders": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-web.nhle.com https://cdn.nhle.com; img-src 'self' https://cdn.nhle.com data:; connect-src 'self' https://api-web.nhle.com;"
+    },
+    "mimeTypes": {
+        ".json": "application/json"
+    }
 }

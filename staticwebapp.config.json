@@ -1,7 +1,7 @@
 {
     "routes": [
         {
-            "route": "/api/v1/club-schedule-season/*/20*",
+            "route": "/api/v1/club-schedule-season/*",
             "rewrite": "https://api-web.nhle.com/v1/club-schedule-season/{0}/{1}",
             "methods": [
                 "GET"

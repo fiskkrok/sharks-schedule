@@ -2,10 +2,30 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const GamesContext = createContext([]);
 
+const NHL_API_URL = 'https://api-web.nhle.com/v1';
+const CORS_PROXY = 'https://corsproxy.io/';
+
 export const GamesProvider = ({ children }) => {
   const [allGames, setAllGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const fetchWithProxy = async (url) => {
+    const proxyUrl = `${CORS_PROXY}?${encodeURIComponent(url)}`;
+    console.log('Fetching through proxy:', proxyUrl);
+
+    const response = await fetch(proxyUrl, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  };
 
   useEffect(() => {
     const fetchAllGames = async () => {
@@ -18,29 +38,14 @@ export const GamesProvider = ({ children }) => {
         const season = `${year}${year + 1}`;
 
         console.log('Fetching Sharks schedule...');
-        const url = `/api/nhl-proxy/club-schedule-season/SJS/${season}`;
-        console.log('Request URL:', url);
-
-        const sharksResponse = await fetch(url);
-        console.log('Response status:', sharksResponse.status);
-
-        if (!sharksResponse.ok) {
-          const errorText = await sharksResponse.text();
-          console.error('Error response:', errorText);
-          throw new Error(`HTTP error! status: ${sharksResponse.status}`);
-        }
-
-        const sharksData = await sharksResponse.json();
-        console.log(
-          'Sharks data received:',
-          sharksData?.games?.length || 0,
-          'games'
-        );
+        const sharksUrl = `${NHL_API_URL}/club-schedule-season/SJS/${season}`;
+        const sharksData = await fetchWithProxy(sharksUrl);
 
         if (!sharksData?.games) {
           throw new Error('No games data in response');
         }
 
+        console.log('Sharks data received:', sharksData.games.length, 'games');
         setAllGames(sharksData.games);
 
         const opponentCodes = new Set();
@@ -59,16 +64,11 @@ export const GamesProvider = ({ children }) => {
         for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
           const batch = opponentArray.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((teamCode) => {
-            const url = `/api/nhl-proxy/club-schedule-season/${teamCode}/${season}`;
-            return fetch(url)
-              .then((response) => (response.ok ? response.json() : null))
-              .catch((error) => {
-                console.warn(
-                  `Failed to fetch schedule for ${teamCode}:`,
-                  error
-                );
-                return null;
-              });
+            const url = `${NHL_API_URL}/club-schedule-season/${teamCode}/${season}`;
+            return fetchWithProxy(url).catch((error) => {
+              console.warn(`Failed to fetch schedule for ${teamCode}:`, error);
+              return null;
+            });
           });
 
           try {
@@ -78,6 +78,8 @@ export const GamesProvider = ({ children }) => {
               const newGames = batchResults
                 .filter(Boolean)
                 .flatMap((schedule) => schedule?.games || []);
+
+              console.log('Adding games:', newGames.length);
 
               const combinedGames = [...prevGames, ...newGames];
               return Array.from(

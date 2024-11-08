@@ -6,8 +6,7 @@ import Comparisons from './player-stats/Comparisons';
 import NerdStats from './player-stats/NerdStats';
 import Career from './player-stats/Career';
 
-const NHL_API_URL = 'https://api-web.nhle.com/v1';
-const CORS_PROXY = 'https://corsproxy.io/';
+const API_PROXY = 'https://nhl-api-proxy.symc6ztyp5.workers.dev/api';
 
 const TABS = {
   QUICK_VIEW: 'quick_view',
@@ -50,12 +49,22 @@ const PlayerStats = ({ isOpen, onClose }) => {
     const fetchPlayerData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `${NHL_API_URL}/player/8480043/landing`
-          // 'https://api-web.nhle.com/player/8480043/landing'
-        );
-        if (!response.ok) throw new Error('Failed to fetch player data');
+        console.log('Fetching player data...');
+
+        const url = `${API_PROXY}/player/8480043/landing`;
+        console.log('Request URL:', url);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error('Failed to fetch player data');
+        }
+
         const data = await response.json();
+        console.log('Player data received:', data?.firstName?.default);
+
         setPlayerData(data);
         setLoading(false);
       } catch (err) {

@@ -5,7 +5,7 @@ import GameStatsModal from './components/GameStatsModal';
 import { isGameInFuture } from './utils/dateUtils';
 import { useGames } from './context/GamesContext';
 import PlayerStats from './components/PlayerStats';
-const GAMES_PER_PAGE = 3;
+const INITIAL_BATCH_SIZE = 3;
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -13,19 +13,24 @@ const App = () => {
   // Remove the local loading state since we're using context loading
   const [error, setError] = useState(null);
   const [visibleUpcomingGames, setVisibleUpcomingGames] =
-    useState(GAMES_PER_PAGE);
-  const [visiblePastGames, setVisiblePastGames] = useState(GAMES_PER_PAGE);
+    useState(INITIAL_BATCH_SIZE);
+  const [visiblePastGames, setVisiblePastGames] = useState(INITIAL_BATCH_SIZE);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
 
   // Get games from context
-  const { allGames = [], loading: gamesLoading } = useGames();
+  const {
+    allGames = [],
+    loading: gamesLoading,
+    loadMoreGames,
+    hasMore,
+  } = useGames();
   const sharksGames =
     allGames?.filter(
       (game) =>
         game?.homeTeam?.abbrev === 'SJS' || game?.awayTeam?.abbrev === 'SJS'
     ) || [];
-
   useEffect(() => {
     setUserTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
@@ -39,19 +44,42 @@ const App = () => {
     setShowPlayerStats(true);
   };
 
-  const loadMoreUpcomingGames = () => {
-    setVisibleUpcomingGames((prev) => prev + GAMES_PER_PAGE);
+  const loadMoreUpcomingGames = async () => {
+    setLoadingMore(true);
+    if (upcomingGames.length > visibleUpcomingGames) {
+      // If we already have more games loaded, just show more
+      setVisibleUpcomingGames((prev) => prev + ADDITIONAL_BATCH_SIZE);
+      setLoadingMore(false);
+    } else if (hasMore) {
+      // If we need to fetch more games
+      await loadMoreGames();
+      setVisibleUpcomingGames((prev) => prev + ADDITIONAL_BATCH_SIZE);
+      setLoadingMore(false);
+    }
   };
 
-  const loadMorePastGames = () => {
-    setVisiblePastGames((prev) => prev + GAMES_PER_PAGE);
+  const loadMorePastGames = async () => {
+    setLoadingMore(true);
+    if (pastGames.length > visiblePastGames) {
+      // If we already have more games loaded, just show more
+      setVisiblePastGames((prev) => prev + ADDITIONAL_BATCH_SIZE);
+      setLoadingMore(false);
+    } else if (hasMore) {
+      // If we need to fetch more games
+      await loadMoreGames();
+      setVisiblePastGames((prev) => prev + ADDITIONAL_BATCH_SIZE);
+      setLoadingMore(false);
+    }
   };
 
   if (gamesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div className="text-lg font-medium text-gray-900 dark:text-white">
-          Loading schedule...
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent mx-auto mb-4"></div>
+          <div className="text-lg font-medium text-gray-900 dark:text-white">
+            Loading schedule...
+          </div>
         </div>
       </div>
     );
@@ -70,6 +98,7 @@ const App = () => {
   const upcomingGames = sharksGames.filter((game) =>
     isGameInFuture(game.startTimeUTC)
   );
+
   const pastGames = sharksGames
     .filter((game) => !isGameInFuture(game.startTimeUTC))
     .sort((a, b) => new Date(b.startTimeUTC) - new Date(a.startTimeUTC));
@@ -129,10 +158,24 @@ const App = () => {
           {upcomingGames.length > visibleUpcomingGames && (
             <button
               onClick={loadMoreUpcomingGames}
-              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
+              disabled={loadingMore}
+              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 
+                transition-colors text-white font-medium disabled:opacity-50 
+                disabled:cursor-not-allowed"
             >
-              Show More Upcoming Games (
-              {upcomingGames.length - visibleUpcomingGames} remaining)
+              {loadingMore ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  <span>Loading more games...</span>
+                </div>
+              ) : (
+                <>
+                  Show More Upcoming Games
+                  <span className="text-sm ml-1 opacity-75">
+                    ({upcomingGames.length - visibleUpcomingGames} remaining)
+                  </span>
+                </>
+              )}
             </button>
           )}
         </div>
@@ -152,14 +195,33 @@ const App = () => {
                 allGames={allGames}
               />
             ))}
+            {loadingMore && (
+              <div className="animate-pulse">
+                <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+              </div>
+            )}
           </div>
           {pastGames.length > visiblePastGames && (
             <button
               onClick={loadMorePastGames}
-              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-white font-medium"
+              disabled={loadingMore}
+              className="mt-4 w-full px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 
+                transition-colors text-white font-medium group disabled:opacity-50 
+                disabled:cursor-not-allowed"
             >
-              Show More Past Games ({pastGames.length - visiblePastGames}{' '}
-              remaining)
+              {loadingMore ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  <span>Loading more games...</span>
+                </div>
+              ) : (
+                <>
+                  Show More Past Games
+                  <span className="text-sm ml-1 opacity-75 group-hover:opacity-100">
+                    ({pastGames.length - visiblePastGames} remaining)
+                  </span>
+                </>
+              )}
             </button>
           )}
         </div>

@@ -3,15 +3,23 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const GamesContext = createContext([]);
 
 const API_PROXY = 'https://nhl-api-proxy.symc6ztyp5.workers.dev/api';
+const INITIAL_BATCH_SIZE = 3;
+const ADDITIONAL_BATCH_SIZE = 3;
 
 export const GamesProvider = ({ children }) => {
   const [allGames, setAllGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentOpponentIndex, setCurrentOpponentIndex] = useState(0);
+  const [opponents, setOpponents] = useState([]);
 
+  // Load initial Sharks games
   useEffect(() => {
-    const fetchAllGames = async () => {
+    const fetchInitialGames = async () => {
       try {
+        setLoading(true);
         const currentDate = new Date();
         const year =
           currentDate.getMonth() < 7
@@ -19,29 +27,23 @@ export const GamesProvider = ({ children }) => {
             : currentDate.getFullYear();
         const season = `${year}${year + 1}`;
 
-        console.log('Fetching Sharks schedule...');
+        console.log('Fetching initial Sharks games...');
         const url = `${API_PROXY}/club-schedule-season/SJS/${season}`;
-        console.log('Request URL:', url);
 
         const sharksResponse = await fetch(url);
-
         if (!sharksResponse.ok) {
           throw new Error(`HTTP error! status: ${sharksResponse.status}`);
         }
 
         const sharksData = await sharksResponse.json();
-        console.log(
-          'Sharks data received:',
-          sharksData?.games?.length || 0,
-          'games'
-        );
-
         if (!sharksData?.games) {
           throw new Error('No games data in response');
         }
 
+        // Set initial games
         setAllGames(sharksData.games);
 
+        // Collect unique opponents
         const opponentCodes = new Set();
         sharksData.games.forEach((game) => {
           if (game.homeTeam.abbrev !== 'SJS')
@@ -50,62 +52,88 @@ export const GamesProvider = ({ children }) => {
             opponentCodes.add(game.awayTeam.abbrev);
         });
 
-        console.log('Found opponents:', Array.from(opponentCodes));
-
-        const opponentArray = Array.from(opponentCodes);
-        const BATCH_SIZE = 2;
-
-        for (let i = 0; i < opponentArray.length; i += BATCH_SIZE) {
-          const batch = opponentArray.slice(i, i + BATCH_SIZE);
-          const batchPromises = batch.map((teamCode) => {
-            const url = `${API_PROXY}/club-schedule-season/${teamCode}/${season}`;
-            return fetch(url)
-              .then((response) => (response.ok ? response.json() : null))
-              .catch((error) => {
-                console.warn(
-                  `Failed to fetch schedule for ${teamCode}:`,
-                  error
-                );
-                return null;
-              });
-          });
-
-          try {
-            const batchResults = await Promise.all(batchPromises);
-
-            setAllGames((prevGames) => {
-              const newGames = batchResults
-                .filter(Boolean)
-                .flatMap((schedule) => schedule?.games || []);
-
-              const combinedGames = [...prevGames, ...newGames];
-              return Array.from(
-                new Map(combinedGames.map((game) => [game.id, game])).values()
-              );
-            });
-
-            // Add delay between batches to avoid rate limiting
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-          } catch (error) {
-            console.error('Batch processing error:', error);
-          }
-        }
-
+        setOpponents(Array.from(opponentCodes));
+        setCurrentOpponentIndex(0);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching game data:', error);
+        console.error('Error fetching initial games:', error);
         setError(error.message);
         setLoading(false);
       }
     };
 
-    fetchAllGames();
+    fetchInitialGames();
   }, []);
 
+  // Function to load more games
+  const loadMoreGames = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      const currentDate = new Date();
+      const year =
+        currentDate.getMonth() < 7
+          ? currentDate.getFullYear() - 1
+          : currentDate.getFullYear();
+      const season = `${year}${year + 1}`;
+
+      const batchOpponents = opponents.slice(
+        currentOpponentIndex,
+        currentOpponentIndex + ADDITIONAL_BATCH_SIZE
+      );
+
+      if (batchOpponents.length === 0) {
+        setHasMore(false);
+        setLoadingMore(false);
+        return;
+      }
+
+      const batchPromises = batchOpponents.map((teamCode) => {
+        const url = `${API_PROXY}/club-schedule-season/${teamCode}/${season}`;
+        return fetch(url)
+          .then((response) => (response.ok ? response.json() : null))
+          .catch((error) => {
+            console.warn(`Failed to fetch schedule for ${teamCode}:`, error);
+            return null;
+          });
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      setAllGames((prevGames) => {
+        const newGames = batchResults
+          .filter(Boolean)
+          .flatMap((schedule) => schedule?.games || []);
+
+        const combinedGames = [...prevGames, ...newGames];
+        return Array.from(
+          new Map(combinedGames.map((game) => [game.id, game])).values()
+        );
+      });
+
+      setCurrentOpponentIndex((prev) => prev + ADDITIONAL_BATCH_SIZE);
+      setHasMore(
+        currentOpponentIndex + ADDITIONAL_BATCH_SIZE < opponents.length
+      );
+      setLoadingMore(false);
+    } catch (error) {
+      console.error('Error loading more games:', error);
+      setLoadingMore(false);
+    }
+  };
+
+  const value = {
+    allGames,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadMoreGames,
+  };
+
   return (
-    <GamesContext.Provider value={{ allGames, loading, error }}>
-      {children}
-    </GamesContext.Provider>
+    <GamesContext.Provider value={value}>{children}</GamesContext.Provider>
   );
 };
 

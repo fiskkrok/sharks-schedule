@@ -2,7 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const GamesContext = createContext([]);
 
+<<<<<<< HEAD
 const API_PROXY = 'https://nhl-api-proxy.symc6ztyp5.workers.dev/api';
+=======
+const API_PROXY = 'https://nhl-api-proxy.symc6ztyp5.workers.dev';
+>>>>>>> 6d213234124b0ccee05a732b64d02238eac8de57
 const INITIAL_BATCH_SIZE = 3;
 const ADDITIONAL_BATCH_SIZE = 3;
 

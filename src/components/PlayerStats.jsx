@@ -6,6 +6,9 @@ import Comparisons from './player-stats/Comparisons';
 import NerdStats from './player-stats/NerdStats';
 import Career from './player-stats/Career';
 
+const NHL_API_URL = 'https://api-web.nhle.com/v1';
+const CORS_PROXY = 'https://corsproxy.io/';
+
 const TABS = {
   QUICK_VIEW: 'quick_view',
   DEEP_DIVE: 'deep_dive',
@@ -48,7 +51,7 @@ const PlayerStats = ({ isOpen, onClose }) => {
       try {
         setLoading(true);
         const response = await fetch(
-          '/api/v1/player/8480043/landing'
+          `${NHL_API_URL}/player/8480043/landing`
           // 'https://api-web.nhle.com/player/8480043/landing'
         );
         if (!response.ok) throw new Error('Failed to fetch player data');

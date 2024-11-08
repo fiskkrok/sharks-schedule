@@ -31,3 +31,12 @@ dist-ssr
 # Vercel
 .vercel
 .vercel
+nhl-api-proxy/nhl-api-proxy/.editorconfig
+nhl-api-proxy/nhl-api-proxy/.prettierrc
+nhl-api-proxy/nhl-api-proxy/package-lock.json
+nhl-api-proxy/nhl-api-proxy/package.json
+nhl-api-proxy/nhl-api-proxy/vitest.config.js
+nhl-api-proxy/nhl-api-proxy/wrangler.toml
+nhl-api-proxy/nhl-api-proxy/src/index.js
+nhl-api-proxy/nhl-api-proxy/test/index.spec.js
+nhl-api-proxy/nhl-api-proxy/.gitignore

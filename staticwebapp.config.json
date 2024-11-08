@@ -1,23 +1,10 @@
 {
     "routes": [
         {
-            "route": "/api/v1/club-schedule-season/*",
-            "rewrite": "https://api-web.nhle.com/v1/club-schedule-season/{0}/{1}",
-            "methods": [
-                "GET"
-            ],
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET",
-                "Access-Control-Allow-Headers": "*",
-                "Cache-Control": "no-cache"
-            }
-        },
-        {
-            "route": "/api/v1/player/*/landing",
-            "rewrite": "https://api-web.nhle.com/v1/player/{0}/landing",
-            "methods": [
-                "GET"
+            "route": "/api/*",
+            "serve": "/index.html",
+            "allowedRoles": [
+                "anonymous"
             ],
             "headers": {
                 "Access-Control-Allow-Origin": "*",
@@ -30,13 +17,38 @@
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
+            "/images/*.{png,jpg,gif}",
+            "/css/*",
             "/assets/*"
         ]
     },
+    "platformErrorOverrides": [
+        {
+            "errorType": "NotFound",
+            "serve": "/index.html"
+        }
+    ],
     "globalHeaders": {
-        "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-web.nhle.com https://cdn.nhle.com; img-src 'self' https://cdn.nhle.com data:; connect-src 'self' https://api-web.nhle.com;",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "*"
+    },
+    "responseOverrides": {
+        "400": {
+            "rewrite": "/index.html",
+            "statusCode": 200
+        },
+        "401": {
+            "redirect": "/index.html",
+            "statusCode": 200
+        },
+        "403": {
+            "rewrite": "/index.html",
+            "statusCode": 200
+        },
+        "404": {
+            "rewrite": "/index.html",
+            "statusCode": 200
+        }
     }
 }
